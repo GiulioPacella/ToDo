@@ -1,32 +1,33 @@
+package model;
+
+import javax.imageio.ImageIO;
 import java.awt.*;
-import java.lang.reflect.Array;
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 
 public class ToDo
 {
     private String titoloTodo;
-    private String scadenza;
+    private LocalDate scadenza;
     private String link;
     private String descrizioneTodo;
-    private String percorsoImmagine;
+    private Image immagine;
     private ArrayList<Utente> condivisioni;
-    private String colore;
+    private Color colore;
     private Boolean completato;
     private Bacheca bacheca;
 
     // Definisco il Costruttore
 
-    public ToDo(String titoloTodo, String scadenza, String link, String descrizioneTodo, String immagine, String colore, String listaUtenti, Bacheca bacheca)
+    public ToDo(String titoloTodo, LocalDate scadenza, String link, String descrizioneTodo, Image immagine, Color colore, ArrayList<Utente> condivisioni, Bacheca bacheca)
     {
     this.titoloTodo = titoloTodo;
     this.scadenza = scadenza;
     this.link = link;
     this.descrizioneTodo = descrizioneTodo;
-    this.percorsoImmagine = immagine;
+    this.immagine = immagine;
     this.colore = colore;
-    ArrayList<Utente> tmp = new ArrayList<>();
-    this.condivisioni = tmp;
+    this.condivisioni = new ArrayList<>();
     this.completato = false;
     this.bacheca = bacheca;
 
@@ -42,7 +43,7 @@ public class ToDo
         System.out.println("Scadenza:  "+ scadenza);
         System.out.println("Link:  "+ link);
         System.out.println("Descrizione:  "+ descrizioneTodo);
-        System.out.println("Immagine:  "+ percorsoImmagine);
+        System.out.println("Immagine:  ");
         System.out.println("Colore:  "+ colore);
         System.out.print("Condiviso con:  ");
         for(int i = 0; i<condivisioni.size(); i++)
@@ -62,7 +63,7 @@ public class ToDo
         return titoloTodo;
     }
 
-    public String getScadenza() {
+    public LocalDate getScadenza() {
         return scadenza;
     }
 
@@ -75,15 +76,17 @@ public class ToDo
         return descrizioneTodo;
     }
 
-    public String getImmagine()
+    public Image getImmagine()
     {
-        return percorsoImmagine;
+        return immagine;
     }
 
-    public String getColore()
+    public Color getColore()
     {
         return colore;
     }
+
+    public Boolean getCompletato() { return completato; }
 
     public ArrayList<Utente> getListaUtenti()
     {
@@ -100,7 +103,7 @@ public class ToDo
         this.titoloTodo = titolo;
     }
 
-    public void setScadenza(String scadenza)
+    public void setScadenza(LocalDate scadenza)
     {
         this.scadenza = scadenza;
     }
@@ -113,11 +116,11 @@ public class ToDo
         this.descrizioneTodo = descrizioneTodo;
     }
 
-    public void setImmagine(String immagine) {
-        this.percorsoImmagine = immagine;
+    public void setImmagine(Image immagine) {
+        this.immagine = immagine;
     }
 
-    public void setColore(String colore) {
+    public void setColore(Color colore) {
         this.colore = colore;
     }
 
@@ -125,6 +128,7 @@ public class ToDo
         this.bacheca = bacheca;
     }
 
+    public void setCompletato(Boolean completato) { this.completato = completato; }
 
 
     // Funziona per completare un To Do
@@ -136,7 +140,7 @@ public class ToDo
 
 
 
-    // Funzione per spostare un To Do in un'altra Bacheca
+    // Funzione per spostare un To Do in un'altra model.Bacheca
 
     public void cambiaBacheca(Bacheca nuovaBacheca)
     {
@@ -151,5 +155,11 @@ public class ToDo
     public void condividiTodo(Utente utente)
     {
         this.condivisioni.add(utente);
+    }
+
+    @Override
+    public String toString()
+    {
+        return getTitoloTodo();
     }
 }

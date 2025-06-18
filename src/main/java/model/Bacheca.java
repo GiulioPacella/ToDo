@@ -1,3 +1,5 @@
+package model;
+
 import java.util.ArrayList;
 
 public class Bacheca
@@ -30,7 +32,7 @@ public class Bacheca
     public void stampaBacheca()
     {
         System.out.println("\n\n");
-        System.out.println("Bacheca: " + titolo);
+        System.out.println("model.Bacheca: " + titolo);
         System.out.println("Descrizione: " + descrizioneBacheca + "\n\n");
 
 
