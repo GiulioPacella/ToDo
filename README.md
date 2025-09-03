@@ -21,3 +21,4 @@ segnala graficamente i ToDo scaduti colorandoli in rosso.
 *Realizzato da*
 - *Giulio Pacella - N86005257*
 - *Christian Petrone - N86005370*
+*nell'anno accademico 2024/2025*
