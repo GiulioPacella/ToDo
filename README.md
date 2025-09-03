@@ -19,5 +19,5 @@ dei ToDo in scadenza entro una data specifica o nella giornata corrente e
 segnala graficamente i ToDo scaduti colorandoli in rosso.
 ***
 *Realizzato da*
--*Giulio Pacella - N86005257*
--*Christian Petrone - N86005370*
+- *Giulio Pacella - N86005257*
+- *Christian Petrone - N86005370*
