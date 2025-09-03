@@ -1,81 +1,124 @@
 package model;
 
 import java.util.ArrayList;
+import java.util.List;
 
+/**
+ * Rappresenta una bacheca personale di un utente.
+ * Ogni utente possiede tre bacheche (numerate da 1 a 3),
+ * nelle quali può inserire, organizzare e spostare i propri ToDo.
+ * La bacheca mantiene una lista dei ToDo a essa associati.
+ */
 public class Bacheca
 {
-    public enum titoloBacheca
-    {
-        Universita,
-        Lavoro,
-        TempoLibero,
-    }
-    private titoloBacheca titolo;
-
+    private int id;
+    private String titoloBacheca;
     private String descrizioneBacheca;
     private ArrayList<ToDo> todos;
 
 
-    // Costruttore
-
-    public Bacheca(titoloBacheca titolo, String descrizioneBacheca)
+    /**
+     * Costruttore della classe Bacheca
+     *
+     * @param titolo il titolo della bacheca
+     * @param descrizioneBacheca la descrizione della bacheca
+     *
+     */
+    public Bacheca(String titolo, String descrizioneBacheca)
     {
     ArrayList<ToDo> tmp = new ArrayList<>();
-    this.titolo = titolo;
+    this.titoloBacheca = titolo;
     this.descrizioneBacheca = descrizioneBacheca;
     this.todos = tmp;
     }
 
+    /**
+     * Restituisce l'id della bacheca
+     *
+     * @return l'id
+     *
+     */
+    public int getId() { return id;}
 
-    // Funzione di stampa
-
-    public void stampaBacheca()
+    /**
+     * Restituisce il titolo della bacheca
+     *
+     * @return il titolo
+     *
+     */
+    public String getTitolo()
     {
-        System.out.println("\n\n");
-        System.out.println("model.Bacheca: " + titolo);
-        System.out.println("Descrizione: " + descrizioneBacheca + "\n\n");
-
-
-        for(int i=0; i<this.todos.size(); i++)
-        {
-          this.todos.get(i).stampaTodo();
-
-        }
+        return titoloBacheca;
     }
 
-
-
-    // Getters
-
-    public titoloBacheca getTitolo()
-    {
-        return titolo;
-    }
-
+    /**
+     * Restituisce la descrizione della bacheca
+     *
+     * @return la descrizione
+     *
+     */
     public String getDescrizioneBacheca() {
         return descrizioneBacheca;
     }
 
-    public ArrayList<ToDo> getTodos()
+    /**
+     * Restituisce la lista dei todo contenuti nella bacheca
+     *
+     * @return la lista di todo
+     *
+     */
+    public List<ToDo> getTodos()
     {
         return todos;
     }
 
+    /**
+     * Imposta l'id della bacheca
+     *
+     * @param id il nuovo id
+     *
+     */
+    public void setId(int id) {this.id = id;}
 
-    // Setters
-
-    public void setTitolo(titoloBacheca titolo)
+    /**
+     * Imposta l'id della bacheca
+     *
+     * @param titolo il nuovo titolo
+     *
+     */
+    public void setTitolo(String titolo)
     {
-        this.titolo = titolo;
+        this.titoloBacheca = titolo;
     }
 
-    public void setDescrizioneBacheca(String descrizioneBacheca)
-    {
-        this.descrizioneBacheca = descrizioneBacheca;
-    }
+    /**
+     * Imposta la descrizione della bacheca
+     *
+     * @param descrizioneBacheca la nuova descrizione
+     *
+     */
+    public void setDescrizioneBacheca(String descrizioneBacheca) { this.descrizioneBacheca = descrizioneBacheca; }
 
+    /**
+     * Imposta la lista dei todo contenuti nella bacheca
+     *
+     * @param todos la nuova lista di todo
+     *
+     */
     public void setTodos(ArrayList<ToDo> todos)
     {
         this.todos = todos;
     }
+
+    /**
+     * Aggiunge un todo alla bacheca
+     *
+     * @param t il todo da aggiungere
+     *
+     */
+    public void addToDo(ToDo t)
+    {
+        todos.add(t);
+    }
+
 }
