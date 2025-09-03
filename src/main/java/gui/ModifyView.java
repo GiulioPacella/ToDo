@@ -13,16 +13,21 @@ import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
 
+
+/**
+ * Rappresenta la schermata di modifica di un todo
+ */
 public class ModifyView {
 
     private Controller controller;
     private ToDo todocorrente;
     private Utente utenteCorrente;
     private Bacheca bachecaCorrente;
+
     private Color selectedColor = null;
-    private LocalDate dataScadenza = null;
-    private LocalDate oggi = LocalDate.now();
     private Image tempimg = null;
+    private final LocalDate oggi = LocalDate.now();
+    private String imagePath = null;
 
     private JPanel panel1;
     private JTextField textField1;
@@ -30,20 +35,27 @@ public class ModifyView {
     private JTextField textField2;
     private JButton applicaButton;
     private JButton scegliColoreButton;
-    private JLabel ColoreScelto;
+    private JLabel coloreScelto;
     private JButton scegliImmagineButton;
-    private JLabel SpazioImmagine;
+    private JLabel spazioImmagine;
     private JPanel panel2;
-    private JSpinner DateSpinner;
+    private JSpinner dateSpinner;
     private JButton completaButton;
     private JButton eliminaButton;
-    private JLabel Stato;
+    private JLabel stato;
     private JPanel panel3;
     private JButton condividiButton;
 
-
+    /**
+     * Costruttore della classe ModifyView
+     *
+     * @param controller il controller
+     * @param utente l'utente corrente
+     * @param bacheca la bacheca contenente il todo che sto modificando
+     * @param todo il todo che sto modificando
+     *
+     */
     public ModifyView(Controller controller, Utente utente, Bacheca bacheca, ToDo todo) {
-
         this.controller = controller;
         this.utenteCorrente = utente;
         this.bachecaCorrente = bacheca;
@@ -51,125 +63,194 @@ public class ModifyView {
 
         $$$setupUI$$$();
 
+        setupSpinner();
+        inizializzaCampi();
+        setupEventi();
+
+        panel2.repaint();
+        panel1.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+    }
+
+    /**
+     * Setup dello spinner per la selezione della data di scadenza
+     *
+     */
+    private void setupSpinner() {
         SpinnerDateModel dateModel = new SpinnerDateModel(new Date(), null, null, Calendar.DAY_OF_MONTH);
-        DateSpinner.setModel(dateModel);
-        JSpinner.DateEditor dateEditor = new JSpinner.DateEditor(DateSpinner, "dd-MM-yyyy");
-        DateSpinner.setEditor(dateEditor);
+        dateSpinner.setModel(dateModel);
+        dateSpinner.setEditor(new JSpinner.DateEditor(dateSpinner, "dd-MM-yyyy"));
+    }
 
-        ColoreScelto.setPreferredSize(new Dimension(50, 20));
-        ColoreScelto.setOpaque(true);
-        ColoreScelto.setBackground(todocorrente.getColore());
-        ColoreScelto.repaint();
+    /**
+     * FUnzione per l'inizializzazione dei campi contenenti le informazioni del todo
+     *
+     */
+    private void inizializzaCampi() {
+        textField1.setText(todocorrente.getTitoloTodo());
+        textArea1.setText(todocorrente.getDescrizioneTodo());
+        textField2.setText(todocorrente.getLink());
 
+        coloreScelto.setPreferredSize(new Dimension(50, 20));
+        coloreScelto.setOpaque(true);
+        coloreScelto.setBackground(todocorrente.getColore());
+        coloreScelto.setForeground(todocorrente.getColore());
+
+        Date data = Date.from(todocorrente.getScadenza().atStartOfDay(ZoneId.systemDefault()).toInstant());
+        dateSpinner.setValue(data);
+
+        aggiornaStato();
+        mostraImmagine(todocorrente.getImmagine());
+    }
+
+    /**
+     * Funzione per la corretta rappresentazione dell'immagine del todo
+     *
+     */
+    private void mostraImmagine(Image img) {
+        if (img != null) {
+            Image scaledImg = img.getScaledInstance(170, 170, Image.SCALE_SMOOTH);
+            spazioImmagine.setIcon(new ImageIcon(scaledImg));
+        } else {
+            spazioImmagine.setIcon(null);
+        }
+    }
+
+    /**
+     * Funzione per l'aggiornamento dello stato del todo
+     *
+     */
+    private void aggiornaStato() {
+        boolean completato = todocorrente.getCompletato();
+        boolean scaduto = !completato && todocorrente.getScadenza().isBefore(oggi);
+
+        if (scaduto) {
+            stato.setText("Stato: Scaduto");
+        } else if (completato) {  // qui usi direttamente il booleano
+            stato.setText("Stato: Completato");
+        } else {
+            stato.setText("Stato: Attivo");
+        }
+    }
+
+    /**
+     * SetUp di tutti i listener
+     *
+     */
+    private void setupEventi() {
+        setupColoreListener();
+        setupImmagineListener();
+        setupEliminaListener();
+        setupCompletaListener();
+        setupApplicaListener();
+        setupCondividiListener();
+    }
+
+    /**
+     * SetUp del Listener per la selezione del colore
+     *
+     */
+    private void setupColoreListener() {
         scegliColoreButton.addActionListener(e -> {
-            Color c = JColorChooser.showDialog(null, "Choose Color", selectedColor);
-            selectedColor = c;
-
-            ColoreScelto.setPreferredSize(new Dimension(50, 20));
-            ColoreScelto.setOpaque(true);
-            ColoreScelto.setBackground(c);
-            ColoreScelto.repaint();
+            Color c = JColorChooser.showDialog(null, "Scegli colore", selectedColor);
+            if (c != null) {
+                selectedColor = c;
+                coloreScelto.setBackground(c);
+                coloreScelto.repaint();
+            }
         });
+    }
 
+    /**
+     * SetUp del listener per la selezione dell'immagine
+     *
+     */
+    private void setupImmagineListener() {
         scegliImmagineButton.addActionListener(e -> {
             JFileChooser fileChooser = new JFileChooser();
             int result = fileChooser.showOpenDialog(null);
             if (result == JFileChooser.APPROVE_OPTION) {
                 File file = fileChooser.getSelectedFile();
+                imagePath = file.getAbsolutePath();
                 ImageIcon icon = new ImageIcon(file.getAbsolutePath());
-
                 tempimg = icon.getImage();
-
-                Image scaledImg = icon.getImage().getScaledInstance(170, 170, Image.SCALE_SMOOTH);
-                icon = new ImageIcon(scaledImg);
-
-                SpazioImmagine.setIcon(icon);
-
-                SpazioImmagine.revalidate();
-                SpazioImmagine.repaint();
+                mostraImmagine(tempimg);
             }
         });
+    }
 
-
-        textField1.setText(todocorrente.getTitoloTodo());
-        textArea1.setText(todocorrente.getDescrizioneTodo());
-
-        Date scadenzaDate = Date.from(todo.getScadenza().atStartOfDay(ZoneId.systemDefault()).toInstant());
-        DateSpinner.setValue(scadenzaDate);
-
-        ColoreScelto.setForeground(todocorrente.getColore());
-
-        textField2.setText(todocorrente.getLink());
-        ColoreScelto.setForeground(todocorrente.getColore());
-
-        if (todocorrente.getCompletato() == Boolean.FALSE && (todocorrente.getScadenza().isBefore(oggi))) {
-            Stato.setText("Stato: Scaduto");
-        }
-
-
-        Image img = todocorrente.getImmagine();
-
-        if (img != null) {
-            ImageIcon icon = new ImageIcon(img.getScaledInstance(170, 170, Image.SCALE_SMOOTH));
-            SpazioImmagine.setIcon(icon);
-        } else {
-            SpazioImmagine.setIcon(null); // oppure un'immagine di default o un messaggio
-        }
-
+    /**
+     * SetUp del listener per la cancellazione del todo
+     */
+    private void setupEliminaListener() {
         eliminaButton.addActionListener(e -> {
-            bachecaCorrente.getTodos().remove(todocorrente);
-            controller.showHome(utenteCorrente);
-            SwingUtilities.getWindowAncestor($$$getRootComponent$$$()).dispose();
+            controller.eliminaToDo(todocorrente, bachecaCorrente, utenteCorrente);
+            chiudiFinestra();
         });
+    }
 
+    /**
+     * SetUp del listener per il completamento del todo
+     *
+     */
+    private void setupCompletaListener() {
         completaButton.addActionListener(e -> {
-            if (todocorrente.getCompletato() == Boolean.FALSE && (todocorrente.getScadenza().isAfter(oggi) || todocorrente.getScadenza().equals(oggi))) {
-                Stato.setText("Stato: Completato");
-                todocorrente.setCompletato(Boolean.TRUE);
-            } else {
-                if (todocorrente.getCompletato() == Boolean.TRUE && (todocorrente.getScadenza().isAfter(oggi) || todocorrente.getScadenza().equals(oggi))) {
-                    Stato.setText("Stato: Attivo                 ");
-                    todocorrente.setCompletato(Boolean.FALSE);
-                }
-            }
-            Stato.repaint();
-        });
+            boolean completato = todocorrente.getCompletato();
+            boolean nonScaduto = !todocorrente.getScadenza().isBefore(oggi);
 
+            if (nonScaduto) {
+                controller.setToDoCompletato(todocorrente, !completato);
+                stato.setText("Stato: " + (completato ? "Attivo" : "Completato"));
+                stato.repaint();
+            }
+        });
+    }
+
+    /**
+     * SetUp del listener per l'applicazione delle modifiche effettuate sul todo
+     *
+     */
+    private void setupApplicaListener() {
         applicaButton.addActionListener(e -> {
+            String titolo = textField1.getText();
+            String descrizione = textArea1.getText();
+            String link = textField2.getText();
+            Date selectedDate = (Date) dateSpinner.getValue();
+            LocalDate dataScadenza = selectedDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 
-            todocorrente.setTitoloTodo(textField1.getText());
-            todocorrente.setDescrizioneTodo(textArea1.getText());
-            todocorrente.setLink(textField2.getText());
-            if (selectedColor != null) {
-                todocorrente.setColore(selectedColor);
-            }
-
-            Date selectedDate = (Date) DateSpinner.getValue();
-            LocalDate tmp = selectedDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-            todocorrente.setScadenza(tmp);
-
-            todocorrente.setImmagine(tempimg);  // assicurati che `img` sia definita correttamente
-
-            controller.showHome(utenteCorrente);
-            SwingUtilities.getWindowAncestor($$$getRootComponent$$$()).dispose();
-
-        });
-
-        condividiButton.addActionListener(e -> {
-
-            String ToUser = JOptionPane.showInputDialog(
-                    null,
-                    "Inserisci l'utente con cui condividere il ToDo:"
+            controller.modificaToDo
+                    (todocorrente,
+                            titolo,
+                            descrizione,
+                            link,
+                            dataScadenza,
+                            selectedColor != null ? selectedColor : todocorrente.getColore(),
+                            tempimg != null ? tempimg : todocorrente.getImmagine(),
+                            imagePath
                     );
 
-            controller.shareTodo(todocorrente, ToUser, bachecaCorrente.getTitolo());
-
+            controller.showHome(utenteCorrente);
+            chiudiFinestra();
         });
-
-
-
-        panel1.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
     }
+
+    /**
+     * SetUp del listener per la condivisione del todo
+     *
+     */
+    private void setupCondividiListener() {
+        condividiButton.addActionListener(e ->
+                controller.showCondivisioni(utenteCorrente, bachecaCorrente, todocorrente)
+        );
+    }
+
+    /**
+     * Metodo per la chiusura della finestra
+     *
+     */
+    private void chiudiFinestra() {
+        SwingUtilities.getWindowAncestor($$$getRootComponent$$$()).dispose();
+    }
+
 
     /**
      * Method generated by IntelliJ IDEA GUI Designer
@@ -223,11 +304,11 @@ public class ModifyView {
         eliminaButton = new JButton();
         eliminaButton.setText("Elimina");
         panel7.add(eliminaButton, new com.intellij.uiDesigner.core.GridConstraints(0, 3, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        Stato = new JLabel();
-        Stato.setText("Stato: Attivo                 ");
-        panel7.add(Stato, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        stato = new JLabel();
+        stato.setText("Stato: Attivo                 ");
+        panel7.add(stato, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         condividiButton = new JButton();
-        condividiButton.setText("Condividi");
+        condividiButton.setText("Condivisioni");
         panel7.add(condividiButton, new com.intellij.uiDesigner.core.GridConstraints(0, 2, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JPanel panel8 = new JPanel();
         panel8.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(1, 4, new Insets(0, 0, 0, 0), -1, -1));
@@ -238,9 +319,9 @@ public class ModifyView {
         final JLabel label4 = new JLabel();
         label4.setText("Colore        ");
         panel8.add(label4, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        ColoreScelto = new JLabel();
-        ColoreScelto.setText("          ");
-        panel8.add(ColoreScelto, new com.intellij.uiDesigner.core.GridConstraints(0, 2, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        coloreScelto = new JLabel();
+        coloreScelto.setText("          ");
+        panel8.add(coloreScelto, new com.intellij.uiDesigner.core.GridConstraints(0, 2, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final com.intellij.uiDesigner.core.Spacer spacer2 = new com.intellij.uiDesigner.core.Spacer();
         panel8.add(spacer2, new com.intellij.uiDesigner.core.GridConstraints(0, 3, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
         final JPanel panel9 = new JPanel();
@@ -257,14 +338,14 @@ public class ModifyView {
         final JPanel panel10 = new JPanel();
         panel10.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
         panel1.add(panel10, new com.intellij.uiDesigner.core.GridConstraints(6, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        SpazioImmagine = new JLabel();
-        SpazioImmagine.setText("");
-        panel10.add(SpazioImmagine, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        spazioImmagine = new JLabel();
+        spazioImmagine.setText("");
+        panel10.add(spazioImmagine, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         panel2 = new JPanel();
         panel2.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
         panel1.add(panel2, new com.intellij.uiDesigner.core.GridConstraints(2, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        DateSpinner = new JSpinner();
-        panel2.add(DateSpinner, new com.intellij.uiDesigner.core.GridConstraints(0, 1, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        dateSpinner = new JSpinner();
+        panel2.add(dateSpinner, new com.intellij.uiDesigner.core.GridConstraints(0, 1, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JLabel label6 = new JLabel();
         label6.setText("Scadenza ");
         panel2.add(label6, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
@@ -279,8 +360,5 @@ public class ModifyView {
         return panel3;
     }
 
-
-    private void createUIComponents() {
-        // TODO: place custom component creation code here
-    }
 }
+
