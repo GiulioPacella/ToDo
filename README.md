@@ -18,6 +18,6 @@ Il sistema permette inoltre la ricerca per titolo o nome, la visualizzazione
 dei ToDo in scadenza entro una data specifica o nella giornata corrente e
 segnala graficamente i ToDo scaduti colorandoli in rosso.
 ***
-*Realizzato da
--Giulio Pacella - N86005257
--Christian Petrone - N86005370*
+* Realizzato da
+- Giulio Pacella - N86005257
+- Christian Petrone - N86005370 *
